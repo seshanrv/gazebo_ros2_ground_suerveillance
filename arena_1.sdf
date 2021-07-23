@@ -466,9 +466,10 @@
             </noise>
           </ray>
           <plugin name="gazebo_ros_ray_sensor" filename="libgazebo_ros_ray_sensor.so">
-            <topicName>scan</topicName>
-            <output_type>sensor_msgs/LaserScan</output_type>
-          </plugin>
+            <namespace>/laser1</namespace> 
+            <remapping>~/out:=scan</remapping>
+            <!--output_type>sensor_msgs/PointCloud2</output_type-->
+          </plugin>          
         </sensor>
       </link>
       <joint name="laser_joint" type="fixed">
