@@ -468,7 +468,7 @@
           <plugin name="gazebo_ros_ray_sensor" filename="libgazebo_ros_ray_sensor.so">
             <namespace>/laser1</namespace> 
             <remapping>~/out:=scan</remapping>
-            <!--output_type>sensor_msgs/PointCloud2</output_type-->
+            <output_type>sensor_msgs/LaserScan</output_type>
           </plugin>          
         </sensor>
       </link>
