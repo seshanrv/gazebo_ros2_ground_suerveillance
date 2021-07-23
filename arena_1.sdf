@@ -306,7 +306,6 @@
         <parent>chassis</parent>
         <child>caster</child>
       </joint>
-
       <link name='camera_link'>
         <pose>0.7 0 0.56 0 0 0</pose>
         <inertial>
@@ -390,7 +389,91 @@
         <parent>chassis</parent>
         <child>camera_link</child>
       </joint>
+      <link name='laser_link'>
+        <pose>0.9 0 0.35 0 0 0</pose>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.0126164</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0416519</iyy>
+            <iyz>0</iyz>
+            <izz>0.0481014</izz>
+          </inertia>
+          <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.15 0.15 0.15</size>
+            </box>
+          </geometry>
+          <material>
+            <name>red</name>
+          </material>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.15 0.15 0.15</size>
+            </box>
+          </geometry>
 
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+        <sensor type="gpu_ray" name="laser1">
+          <pose>0 0 0 0 0 0</pose>
+          <visualize>true</visualize>
+          <update_rate>40</update_rate>
+          <ray>
+            <scan>
+              <horizontal>
+                <samples>720</samples>
+                <resolution>1</resolution>
+                <min_angle>-1.570796</min_angle>
+                <max_angle>1.570796</max_angle>
+              </horizontal>
+            </scan>
+            <range>
+              <min>0.15</min>
+              <max>4.0</max>
+              <resolution>0.01</resolution>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+              <mean>0.0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </ray>
+          <plugin name="gazebo_ros_ray_sensor" filename="libgazebo_ros_ray_sensor.so">
+            <topicName>scan</topicName>
+          </plugin>
+        </sensor>
+      </link>
+      <joint name="laser_joint" type="fixed">
+        <parent>chassis</parent>
+        <child>laser_link</child>
+      </joint>
       <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
         <ros>
           <namespace>/surv_bot</namespace>
@@ -408,6 +491,7 @@
         <odometry_frame>odom_demo</odometry_frame>
         <robot_base_frame>chassis</robot_base_frame>
       </plugin>
+
     </model>
     <gravity>0 0 -9.8</gravity>
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
