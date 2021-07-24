@@ -26,8 +26,8 @@ class ControllerNode : public rclcpp::Node
         rclcpp::Subscription<LaserScan>::SharedPtr laser_subscriber_;
         rclcpp::Subscription<Image>::SharedPtr image_subscriber_;
         
-        void compute_twist_cmd();
-        LaserScan* laser_scan_;
+        Twist compute_twist_cmd();
+        LaserScan laser_scan_;
         Image* cam_img_;
-        Twist twist_cmd_;
+        // Twist twist_cmd_;
 };
