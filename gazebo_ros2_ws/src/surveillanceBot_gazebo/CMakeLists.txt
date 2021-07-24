@@ -24,13 +24,13 @@ find_package(sensor_msgs REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(bot_controller src/bot_controller.cpp)
-ament_target_dependencies(bot_controller rclcpp geometry_msgs sensor_msgs)
-target_include_directories(bot_controller PUBLIC
+add_executable(ControllerNode src/ControllerNode.cpp)
+ament_target_dependencies(ControllerNode rclcpp geometry_msgs sensor_msgs)
+target_include_directories(ControllerNode PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-install(TARGETS bot_controller
+install(TARGETS ControllerNode
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
