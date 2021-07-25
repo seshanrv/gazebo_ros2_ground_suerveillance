@@ -62,7 +62,7 @@ Twist ControllerNode::compute_twist_cmd()
         RCLCPP_INFO(this->get_logger(), "Found obstacle");
         twist_cmd.linear.x = 0.0;
 
-        save_img(cam_img_, fs::current_path().string());
+        save_img(cam_img_);
 
         twist_cmd.angular.z = 0.5;
     }
@@ -77,15 +77,17 @@ Twist ControllerNode::compute_twist_cmd()
     return twist_cmd;
 }
 
-void ControllerNode::save_img(const Image &img, const std::string &images_folder)
+void ControllerNode::save_img(const Image &img)
 {
     try
     {
         cv_bridge::CvImagePtr cv_ptr;
         cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
-        const std::string filename = images_folder + "/" + std::to_string(img.header.stamp.nanosec) + ".jpg";
-        // char base_name[256];   //Image save
-        // sprintf(base_name,"/home/zhy/catkin_ws_sliding_lane/image/%ld.jpg",count_++);
+        const std::string image_folder = fs::current_path().string() + "/camera_images";
+        if(!fs::is_directory(image_folder))
+            fs::create_directory(image_folder);
+
+        const std::string filename = image_folder + "/" + std::to_string(img.header.stamp.nanosec) + ".jpg";
         cv::imwrite(filename, cv_ptr->image);
         std::cout << "Saved image of the obstacle" << std::endl;
     }

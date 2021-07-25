@@ -20,7 +20,7 @@ class ControllerNode : public rclcpp::Node
         void publisher_callback();
         void laser_sub_callback(LaserScan::SharedPtr msg);
         void cam_sub_callback(Image::SharedPtr msg);
-        void save_img(const Image &img, const std::string &images_folder);
+        void save_img(const Image &img);
         
         rclcpp::TimerBase::SharedPtr timer_;
         rclcpp::Publisher<Twist>::SharedPtr twist_publisher_;
