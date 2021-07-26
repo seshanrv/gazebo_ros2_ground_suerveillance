@@ -20,6 +20,8 @@ ControllerNode::ControllerNode() : Node("controller_node")
 
     timer_ = this->create_wall_timer(25ms, std::bind(&ControllerNode::publisher_callback, this));
     laser_scan_ = LaserScan();
+    found_obstacle_prev_ = false;
+    found_obstacle_ = false;
     // twist_cmd_ = Twist();
 }
 
@@ -31,6 +33,7 @@ void ControllerNode::publisher_callback()
     // RCLCPP_INFO(this->get_logger(), "Sending twist: ", cmd.linear.x);
     // std::cout << "sending twist: " << cmd.linear.x << std::endl;
     twist_publisher_->publish(compute_twist_cmd());
+    if (found_obstacle_ && !found_obstacle_prev_) save_img(cam_img_);
 
 }
 
@@ -49,12 +52,8 @@ void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
 }
 
 Twist ControllerNode::compute_twist_cmd()
-{
-    // for (float point : laser_scan_.ranges)
-    // {
-    //     std::cout << point << std::endl;
-    // }
-    // std::cout << "----------------" << std::endl;
+{   
+    found_obstacle_prev_ = found_obstacle_;
     Twist twist_cmd = Twist();
     if (std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
                     { return range < 3.5; }))
@@ -62,17 +61,16 @@ Twist ControllerNode::compute_twist_cmd()
         RCLCPP_INFO(this->get_logger(), "Found obstacle");
         twist_cmd.linear.x = 0.0;
 
-        save_img(cam_img_);
+        // save_img(cam_img_);
+        found_obstacle_ = true;
 
         twist_cmd.angular.z = 0.5;
     }
     else
-    {
+    {   
+        found_obstacle_ = false;
         twist_cmd.linear.x = 1.5;
         twist_cmd.angular.z = 0.0;
-        // for(float point : laser_scan_->ranges) std::cout << point << " ";
-        // std::cout << std::endl;
-        // RCLCPP_INFO(this->get_logger(), std::stof(laser_scan_->ranges));
     }
     return twist_cmd;
 }
@@ -84,6 +82,7 @@ void ControllerNode::save_img(const Image &img)
         cv_bridge::CvImagePtr cv_ptr;
         cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
         const std::string image_folder = fs::current_path().string() + "/camera_images";
+        
         if(!fs::is_directory(image_folder))
             fs::create_directory(image_folder);
 

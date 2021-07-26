@@ -30,5 +30,7 @@ class ControllerNode : public rclcpp::Node
         Twist compute_twist_cmd();
         LaserScan laser_scan_;
         Image cam_img_;
+        bool found_obstacle_;
+        bool found_obstacle_prev_;
         // Twist twist_cmd_;
 };
