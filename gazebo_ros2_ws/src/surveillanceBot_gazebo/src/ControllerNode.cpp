@@ -23,6 +23,8 @@ ControllerNode::ControllerNode() : Node("controller_node")
     found_obstacle_prev_ = false;
     found_obstacle_ = false;
     camera_alignment_ = false;
+    img_count_ = 0;
+    img_count_prev_ = 0;
     // twist_cmd_ = Twist();
 }
 
@@ -34,7 +36,7 @@ void ControllerNode::publisher_callback()
     // RCLCPP_INFO(this->get_logger(), "Sending twist: ", cmd.linear.x);
     // std::cout << "sending twist: " << cmd.linear.x << std::endl;
     twist_publisher_->publish(compute_twist_cmd());
-    if (found_obstacle_ && !found_obstacle_prev_ && camera_alignment_) save_img(cam_img_);
+    if (found_obstacle_ && camera_alignment_) save_img(cam_img_);
 
 }
 
@@ -57,7 +59,8 @@ Twist ControllerNode::compute_twist_cmd()
     found_obstacle_prev_ = found_obstacle_;
     Twist twist_cmd = Twist();
     if (std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
-                    { return range < 3.5; }))
+                    { return range < 3.5; }) 
+        && img_count_ == img_count_prev_)
     {
         RCLCPP_INFO(this->get_logger(), "Found obstacle");
         found_obstacle_ = true;
@@ -87,9 +90,16 @@ Twist ControllerNode::compute_twist_cmd()
             }
         }
     }
+    else if(std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
+                    { return range < 3.5; } && img_count_ > img_count_prev_))
+    {
+        found_obstacle_ = true;
+        twist_cmd.linear.x = 1.5;
+        twist_cmd.angular.z = 0.5;
+    }
     else
     {
-        found_obstacle_ = false;
+        found_obstacle_ = true;
         twist_cmd.linear.x = 1.5;
         twist_cmd.angular.z = 0.0;
     }
@@ -110,6 +120,8 @@ void ControllerNode::save_img(const Image &img)
         const std::string filename = image_folder + "/" + std::to_string(img.header.stamp.nanosec) + ".jpg";
         cv::imwrite(filename, cv_ptr->image);
         std::cout << "Saved image of the obstacle" << std::endl;
+        img_count_prev_ = img_count_;
+        ++img_count_;
     }
     catch(...)
     {
