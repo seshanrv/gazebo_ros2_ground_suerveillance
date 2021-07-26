@@ -22,6 +22,7 @@ ControllerNode::ControllerNode() : Node("controller_node")
     laser_scan_ = LaserScan();
     found_obstacle_prev_ = false;
     found_obstacle_ = false;
+    camera_alignment_ = false;
     // twist_cmd_ = Twist();
 }
 
@@ -33,7 +34,7 @@ void ControllerNode::publisher_callback()
     // RCLCPP_INFO(this->get_logger(), "Sending twist: ", cmd.linear.x);
     // std::cout << "sending twist: " << cmd.linear.x << std::endl;
     twist_publisher_->publish(compute_twist_cmd());
-    if (found_obstacle_ && !found_obstacle_prev_) save_img(cam_img_);
+    if (found_obstacle_ && !found_obstacle_prev_ && camera_alignment_) save_img(cam_img_);
 
 }
 
@@ -52,22 +53,42 @@ void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
 }
 
 Twist ControllerNode::compute_twist_cmd()
-{   
+{
     found_obstacle_prev_ = found_obstacle_;
     Twist twist_cmd = Twist();
     if (std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
                     { return range < 3.5; }))
     {
         RCLCPP_INFO(this->get_logger(), "Found obstacle");
+        found_obstacle_ = true;
         twist_cmd.linear.x = 0.0;
 
-        // save_img(cam_img_);
-        found_obstacle_ = true;
+        if (!camera_alignment_)
+        {
 
-        twist_cmd.angular.z = 0.5;
+            RCLCPP_INFO(this->get_logger(), "Aligning camera...");
+
+            if (laser_scan_.ranges[laser_scan_.ranges.size() / 2] == INFINITY &&
+                std::any_of(laser_scan_.ranges.begin() + laser_scan_.ranges.size() / 2,
+                            laser_scan_.ranges.end(),
+                            [](float range)
+                            { return range != INFINITY; }))
+            {
+                twist_cmd.angular.z = 0.5;
+            }
+            else if (laser_scan_.ranges[laser_scan_.ranges.size() / 2] == INFINITY)
+            {
+                twist_cmd.angular.z = -0.5;
+            }
+            else
+            {
+                twist_cmd.angular.z = 0.0;
+                camera_alignment_ = true;
+            }
+        }
     }
     else
-    {   
+    {
         found_obstacle_ = false;
         twist_cmd.linear.x = 1.5;
         twist_cmd.angular.z = 0.0;

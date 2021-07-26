@@ -32,5 +32,6 @@ class ControllerNode : public rclcpp::Node
         Image cam_img_;
         bool found_obstacle_;
         bool found_obstacle_prev_;
+        bool camera_alignment_;
         // Twist twist_cmd_;
 };
