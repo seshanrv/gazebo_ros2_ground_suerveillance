@@ -19,6 +19,7 @@ ControllerNode::ControllerNode() : Node("controller_node")
 
     timer_ = this->create_wall_timer(25ms, std::bind(&ControllerNode::publisher_callback, this));
     laser_scan_ = LaserScan();
+    cam_img_ = Image();
     camera_alignment_ = false;
     img_saved_ = false;
     obstacle_side_ = center;
@@ -43,8 +44,6 @@ bool ControllerNode::found_obstacle()
 {
     return std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
                     { return range < 3.5; });
-
-
 }
 
 Twist ControllerNode::compute_twist_cmd()
