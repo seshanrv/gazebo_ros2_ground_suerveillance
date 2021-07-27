@@ -24,6 +24,7 @@ class ControllerNode : public rclcpp::Node
         void cam_sub_callback(Image::SharedPtr msg);
         void save_img(const Image &img);
         Twist align_camera();
+        Twist compute_twist_cmd();
         bool found_obstacle();
         
         rclcpp::TimerBase::SharedPtr timer_;
@@ -31,11 +32,8 @@ class ControllerNode : public rclcpp::Node
         rclcpp::Subscription<LaserScan>::SharedPtr laser_subscriber_;
         rclcpp::Subscription<Image>::SharedPtr image_subscriber_;
         
-        Twist compute_twist_cmd();
         LaserScan laser_scan_;
         Image cam_img_;
-        bool found_obstacle_;
-        bool found_obstacle_prev_;
         bool camera_alignment_;
         bool img_saved_;
         side obstacle_side_;
