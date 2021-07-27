@@ -32,7 +32,7 @@ class ControllerNode : public rclcpp::Node
         rclcpp::Subscription<LaserScan>::SharedPtr laser_subscriber_;
         rclcpp::Subscription<Image>::SharedPtr image_subscriber_;
         
-        LaserScan laser_scan_;
+        LaserScan::SharedPtr laser_scan_;
         Image::SharedPtr cam_img_;
         bool camera_alignment_;
         bool img_saved_;

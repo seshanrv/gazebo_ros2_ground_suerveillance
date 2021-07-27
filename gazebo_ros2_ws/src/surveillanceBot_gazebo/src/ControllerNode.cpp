@@ -18,8 +18,8 @@ ControllerNode::ControllerNode() : Node("controller_node")
     image_subscriber_ = this->create_subscription<Image>("/camera1/image_raw", rclcpp::QoS(10), std::bind(&ControllerNode::cam_sub_callback, this, std::placeholders::_1));
 
     timer_ = this->create_wall_timer(25ms, std::bind(&ControllerNode::publisher_callback, this));
-    laser_scan_ = LaserScan();
-    // cam_img_ = Image();
+    laser_scan_ = std::make_shared<LaserScan>();
+    cam_img_ = std::make_shared<Image>();
     camera_alignment_ = false;
     img_saved_ = false;
     obstacle_side_ = center;
@@ -32,7 +32,7 @@ void ControllerNode::publisher_callback()
 
 void ControllerNode::laser_sub_callback(LaserScan::SharedPtr msg)
 {
-    laser_scan_ = *msg.get();
+    laser_scan_ = msg;
 }
 
 void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
@@ -42,19 +42,21 @@ void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
 
 bool ControllerNode::found_obstacle()
 {
-    return std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
+    return std::any_of(laser_scan_->ranges.begin(), laser_scan_->ranges.end(), [](float &range)
                     { return range < 3.5; });
 }
 
 Twist ControllerNode::compute_twist_cmd()
 {
     Twist twist_cmd = Twist();
-    if (found_obstacle() && !camera_alignment_ && !img_saved_)
+    bool found_obst = found_obstacle();
+    if (found_obst && !camera_alignment_ && !img_saved_)
         twist_cmd = align_camera();
 
-    else if (found_obstacle() && camera_alignment_ && !img_saved_)
+    else if (found_obst && camera_alignment_ && !img_saved_)
         save_img(cam_img_);
-    else if (found_obstacle() && img_saved_)
+
+    else if (found_obst && img_saved_)
     {
         twist_cmd.linear.x = 0.0;
         twist_cmd.angular.z = obstacle_side_ == left ? 0.5 : -0.5;
@@ -97,9 +99,9 @@ Twist ControllerNode::align_camera()
 
     Twist twist_cmd;
 
-    if (laser_scan_.ranges[laser_scan_.ranges.size() / 2] == INFINITY &&
-        std::any_of(laser_scan_.ranges.begin() + laser_scan_.ranges.size() / 2,
-                    laser_scan_.ranges.end(),
+    if (laser_scan_->ranges[laser_scan_->ranges.size() / 2] == INFINITY &&
+        std::any_of(laser_scan_->ranges.begin() + laser_scan_->ranges.size() / 2,
+                    laser_scan_->ranges.end(),
                     [](float range)
                     { return range != INFINITY; }))
     {
@@ -107,7 +109,7 @@ Twist ControllerNode::align_camera()
         twist_cmd.linear.x = 0.0;
         twist_cmd.angular.z = 0.3;
     }
-    else if (laser_scan_.ranges[laser_scan_.ranges.size() / 2] == INFINITY)
+    else if (laser_scan_->ranges[laser_scan_->ranges.size() / 2] == INFINITY)
     {
         obstacle_side_ = left;
         twist_cmd.linear.x = 0.0;
