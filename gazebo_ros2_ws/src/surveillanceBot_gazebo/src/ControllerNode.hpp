@@ -12,6 +12,8 @@ using geometry_msgs::msg::Twist;
 using sensor_msgs::msg::LaserScan;
 using sensor_msgs::msg::Image;
 
+enum side{left, center, right};
+
 class ControllerNode : public rclcpp::Node
 {
     public:
@@ -21,6 +23,8 @@ class ControllerNode : public rclcpp::Node
         void laser_sub_callback(LaserScan::SharedPtr msg);
         void cam_sub_callback(Image::SharedPtr msg);
         void save_img(const Image &img);
+        Twist align_camera();
+        bool found_obstacle();
         
         rclcpp::TimerBase::SharedPtr timer_;
         rclcpp::Publisher<Twist>::SharedPtr twist_publisher_;
@@ -33,6 +37,8 @@ class ControllerNode : public rclcpp::Node
         bool found_obstacle_;
         bool found_obstacle_prev_;
         bool camera_alignment_;
-        uint img_count_, img_count_prev_;
+        bool img_saved_;
+        side obstacle_side_;
+        // uint img_count_, img_count_prev_;
         // Twist twist_cmd_;
 };
