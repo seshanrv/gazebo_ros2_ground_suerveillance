@@ -22,7 +22,7 @@ class ControllerNode : public rclcpp::Node
         void publisher_callback();
         void laser_sub_callback(LaserScan::SharedPtr msg);
         void cam_sub_callback(Image::SharedPtr msg);
-        void save_img(const Image &img);
+        void save_img(const std::shared_ptr<const Image> img);
         Twist align_camera();
         Twist compute_twist_cmd();
         bool found_obstacle();
@@ -33,7 +33,7 @@ class ControllerNode : public rclcpp::Node
         rclcpp::Subscription<Image>::SharedPtr image_subscriber_;
         
         LaserScan laser_scan_;
-        Image cam_img_;
+        Image::SharedPtr cam_img_;
         bool camera_alignment_;
         bool img_saved_;
         side obstacle_side_;

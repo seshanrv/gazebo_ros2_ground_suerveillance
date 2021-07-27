@@ -19,7 +19,7 @@ ControllerNode::ControllerNode() : Node("controller_node")
 
     timer_ = this->create_wall_timer(25ms, std::bind(&ControllerNode::publisher_callback, this));
     laser_scan_ = LaserScan();
-    cam_img_ = Image();
+    // cam_img_ = Image();
     camera_alignment_ = false;
     img_saved_ = false;
     obstacle_side_ = center;
@@ -37,7 +37,7 @@ void ControllerNode::laser_sub_callback(LaserScan::SharedPtr msg)
 
 void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
 {
-    cam_img_ = *msg.get();
+    cam_img_ = msg;
 }
 
 bool ControllerNode::found_obstacle()
@@ -69,7 +69,7 @@ Twist ControllerNode::compute_twist_cmd()
     return twist_cmd;
 }
 
-void ControllerNode::save_img(const Image &img)
+void ControllerNode::save_img(const std::shared_ptr<const Image> img)
 {
     try
     {
@@ -80,7 +80,7 @@ void ControllerNode::save_img(const Image &img)
         if (!fs::is_directory(image_folder))
             fs::create_directory(image_folder);
 
-        const std::string filename = image_folder + "/" + std::to_string(img.header.stamp.nanosec) + ".jpg";
+        const std::string filename = image_folder + "/" + std::to_string(img->header.stamp.nanosec) + ".jpg";
         cv::imwrite(filename, cv_ptr->image);
         RCLCPP_INFO(this->get_logger(), "Saved image of the obstacle");
         img_saved_ = true;
