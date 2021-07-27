@@ -14,7 +14,6 @@ namespace fs = std::filesystem;
 ControllerNode::ControllerNode() : Node("controller_node")
 {
     twist_publisher_ = this->create_publisher<Twist>("/surv_bot/cmd_vel", rclcpp::QoS(10));
-    // RCLCPP_INFO(this->get_logger, "Publishing to /surv_bot/cmd_vel");
     laser_subscriber_ = this->create_subscription<LaserScan>("/laser1/scan", rclcpp::QoS(10), std::bind(&ControllerNode::laser_sub_callback, this, std::placeholders::_1));
     image_subscriber_ = this->create_subscription<Image>("/camera1/image_raw", rclcpp::QoS(10), std::bind(&ControllerNode::cam_sub_callback, this, std::placeholders::_1));
 
@@ -25,42 +24,27 @@ ControllerNode::ControllerNode() : Node("controller_node")
     camera_alignment_ = false;
     img_saved_ = false;
     obstacle_side_ = center;
-    // img_count_ = 0;
-    // img_count_prev_ = 0;
-    // twist_cmd_ = Twist();
 }
 
 void ControllerNode::publisher_callback()
 {
-    // Twist cmd = compute_twist_cmd();
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    // RCLCPP_INFO(this->get_logger(), "Sending twist: ", cmd.linear.x);
-    // std::cout << "sending twist: " << cmd.linear.x << std::endl;
     twist_publisher_->publish(compute_twist_cmd());
-    // img_count_prev_ = img_count_;
-    // if (found_obstacle_ && camera_alignment_) save_img(cam_img_);
 }
 
 void ControllerNode::laser_sub_callback(LaserScan::SharedPtr msg)
 {
     laser_scan_ = *msg.get();
-    // RCLCPP_INFO(this->get_logger(), "Received laser");
-    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
 {
     cam_img_ = *msg.get();
-    // RCLCPP_INFO(this->get_logger(), "Received camera image");
-    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 bool ControllerNode::found_obstacle()
 {
     bool found_obst = std::any_of(laser_scan_.ranges.begin(), laser_scan_.ranges.end(), [](float range)
                     { return range < 3.5; });
-    // if(found_obst) RCLCPP_INFO(this->get_logger(), "Obstacle in range...");
 
     return found_obst;
 }
@@ -71,12 +55,11 @@ Twist ControllerNode::compute_twist_cmd()
     if (found_obstacle() && !camera_alignment_ && !img_saved_)
         twist_cmd = align_camera();
 
-    else if(found_obstacle() && camera_alignment_&& !img_saved_)
+    else if (found_obstacle() && camera_alignment_ && !img_saved_)
         save_img(cam_img_);
-    else if(found_obstacle() && img_saved_)
+    else if (found_obstacle() && img_saved_)
     {
         twist_cmd.linear.x = 0.0;
-        
         twist_cmd.angular.z = obstacle_side_ == left ? 0.5 : -0.5;
     }
     else
@@ -96,17 +79,16 @@ void ControllerNode::save_img(const Image &img)
         cv_bridge::CvImagePtr cv_ptr;
         cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
         const std::string image_folder = fs::current_path().string() + "/camera_images";
-        
-        if(!fs::is_directory(image_folder))
+
+        if (!fs::is_directory(image_folder))
             fs::create_directory(image_folder);
 
         const std::string filename = image_folder + "/" + std::to_string(img.header.stamp.nanosec) + ".jpg";
         cv::imwrite(filename, cv_ptr->image);
-        // std::cout << "Saved image of the obstacle" << std::endl;
         RCLCPP_INFO(this->get_logger(), "Saved image of the obstacle");
         img_saved_ = true;
     }
-    catch(...)
+    catch (...)
     {
         RCLCPP_INFO(this->get_logger(), "Error saving image");
     }
