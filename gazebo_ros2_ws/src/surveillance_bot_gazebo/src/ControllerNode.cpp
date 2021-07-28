@@ -38,13 +38,13 @@ void ControllerNode::cam_sub_callback(Image::SharedPtr msg)
 {
     cam_img_ = msg;
 }
-
+//returns true if an obstacle is found within 3.5m 
 bool ControllerNode::found_obstacle()
 {
     return std::any_of(laser_scan_->ranges.begin(), laser_scan_->ranges.end(), [](float &range)
                     { return range < 3.5; });
 }
-
+//computes the velocity commands for the diff-drive bot
 Twist ControllerNode::compute_twist_cmd()
 {
     Twist twist_cmd = Twist();
@@ -69,7 +69,7 @@ Twist ControllerNode::compute_twist_cmd()
     }
     return twist_cmd;
 }
-
+//saves an image to disk
 void ControllerNode::save_img(const std::shared_ptr<const Image> img)
 {
     try
@@ -91,7 +91,7 @@ void ControllerNode::save_img(const std::shared_ptr<const Image> img)
         RCLCPP_INFO(this->get_logger(), "Error saving image");
     }
 }
-
+//aligns the bot such that the obstacle is in FOV of the camera
 Twist ControllerNode::align_camera()
 {
     RCLCPP_INFO(this->get_logger(), "Aligning camera...");

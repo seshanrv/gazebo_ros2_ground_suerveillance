@@ -13,7 +13,7 @@ using sensor_msgs::msg::LaserScan;
 using sensor_msgs::msg::Image;
 
 enum side{left, center, right};
-
+//ROS2 node that implements all functionalities for controlling the surveillance bot in gazebo
 class ControllerNode : public rclcpp::Node
 {
     public:
@@ -32,9 +32,9 @@ class ControllerNode : public rclcpp::Node
         rclcpp::Subscription<LaserScan>::SharedPtr laser_subscriber_;
         rclcpp::Subscription<Image>::SharedPtr image_subscriber_;
         
-        LaserScan::SharedPtr laser_scan_;
-        Image::SharedPtr cam_img_;
+        LaserScan::SharedPtr laser_scan_;   //shared pointer to the current laser scan message
+        Image::SharedPtr cam_img_;          //shared pointer to the current camera image message
         bool camera_alignment_;
         bool img_saved_;
-        side obstacle_side_;
+        side obstacle_side_;    //which side of the bot the current obstacle is
 };

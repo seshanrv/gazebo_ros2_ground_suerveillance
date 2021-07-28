@@ -4,6 +4,8 @@ This repo consists of a ROS2 node that communicates with a ground surveillance r
 
 The robot is a differential drive vehicle with a camera and a laser scanner mounted on it. The ```arena_1.sdf``` file describes the model used in gazebo. The gazebo model publishes the laser scan and camera images via ROS2 messages at a fixed frequency. The controller node uses the laser scan to detect obstacles and to align the camera. The camera image is then saved to disk.
 
+![alt text](surveillance_bot_snap.png)
+
 The code structure is simple as it consists of only one ROS2 node, see ```ControllerNode.cpp``` and ```ControllerNode.hpp```. The program is expected to maneuver the robot in the arena without colliding with any obstacles. Whenever an obstacle is detected the robot aligns itself such that the object is in the field of view of the camera and then saves an image of the obstacle (path: ```gazebo_ros2_ws/camera_images/```).
 
 Note: This application is tested only in Ubuntu 20.04
