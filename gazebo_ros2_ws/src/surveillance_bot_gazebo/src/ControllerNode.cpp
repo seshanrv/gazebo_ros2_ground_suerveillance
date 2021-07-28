@@ -16,7 +16,6 @@ ControllerNode::ControllerNode() : Node("controller_node")
     twist_publisher_ = this->create_publisher<Twist>("/surv_bot/cmd_vel", rclcpp::QoS(10));
     laser_subscriber_ = this->create_subscription<LaserScan>("/laser1/scan", rclcpp::QoS(10), std::bind(&ControllerNode::laser_sub_callback, this, std::placeholders::_1));
     image_subscriber_ = this->create_subscription<Image>("/camera1/image_raw", rclcpp::QoS(10), std::bind(&ControllerNode::cam_sub_callback, this, std::placeholders::_1));
-
     timer_ = this->create_wall_timer(25ms, std::bind(&ControllerNode::publisher_callback, this));
     laser_scan_ = std::make_shared<LaserScan>();
     cam_img_ = std::make_shared<Image>();
