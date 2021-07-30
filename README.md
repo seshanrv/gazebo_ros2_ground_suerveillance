@@ -37,8 +37,20 @@ Note: This application is tested only in Ubuntu 20.04
 * OpenCV >= 4.2
   * Linux (>= Ubuntu 18.04): click [here](https://docs.opencv.org/4.5.0/d7/d9f/tutorial_linux_install.html) for installation instructions
 
+* Docker >= 20.10.5 for building and running in a docker container. 
+  * For installation click [here](https://docs.docker.com/get-docker/). 
+  * You will also need any version of VNC viewer for the display - for e.g. [RealVNC](https://www.realvnc.com/en/connect/download/viewer/).
+
 ## Instructions to build and run
 
+### Using Docker
+1. Clone this repo
+2. Change directory: ```cd <clone parent directory>/```
+3. Build: ```./build.sh```
+4. Run: ```./run.sh```
+5. Connect to ```127.0.0.1:5900``` from a VNC viewer for the display
+
+### Running locally
 1. Clone this repo.
 2. Change directory ```cd <clone parent directory>/gazebo_ros2_ground_suerveillance/gazebo_ros2_ws```
 3. Build using colcon ```colcon build```
@@ -64,3 +76,5 @@ Note: This application is tested only in Ubuntu 20.04
 * Memory management
   * The project uses smart pointers instead of raw pointers.
     * Camera images, laser scans and the instances of ROS2 publishers and subscribers are all handled using shared pointers: see ```ControllerNode.hpp``` L30 to L36. Subsequent usage of shared pointers can be seen in ```ControllerNode.cpp```.
+
+NOTE to reviewers: This program cannot be run in the Udacity workspace, please run in a local machine using docker.
