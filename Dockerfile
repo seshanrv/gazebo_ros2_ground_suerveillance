@@ -15,9 +15,11 @@ RUN mkdir ~/.vnc
 # Setup a password
 #RUN     x11vnc -storepasswd 1234 ~/.vnc/passwd
 # Autostart gazebo
-RUN echo "cd /home/gazebo_ros2_project && gazebo arena_1.sdf" >> /.bashrc
-RUN echo "cd gazebo_ros2_ws && colcon build" >> /.bashrc
+RUN echo "cd /home/gazebo_ros2_project && gazebo arena_1.sdf & " >> /.bashrc
+RUN echo "cd /home/gazebo_ros2_project/gazebo_ros2_ws && colcon build" >> /.bashrc
+RUN echo "source install/setup.bash" >> /.bashrc
 RUN echo "ros2 run surveillance_bot_gazebo ControllerNode">> /.bashrc
+
 #RUN bash -c 	'cd /home/gazebo_ros2_project/gazebo_ros2_ws && \
 #		colcon build '
 #RUN bash -c	'. install/setup.bash && \
